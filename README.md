@@ -1,6 +1,6 @@
 <h1 align="center">🐾 PetGuard – Monitoramento Inteligente de Pets</h1>
 
-<p align="justify">PetGuard é uma aplicação inovadora que integra sistemas embarcados, Internet das Coisas (IoT) e uma interface web moderna para oferecer monitoramento completo e em tempo real do seu animal de estimação.
+<div align="justify">PetGuard é uma aplicação inovadora que integra sistemas embarcados, Internet das Coisas (IoT) e uma interface web moderna para oferecer monitoramento completo e em tempo real do seu animal de estimação.
 
 A solução é composta por um dispositivo embarcado conectado à coleira do pet, equipado com GPS e módulo Wi-Fi (ESP32/ESP8266), capaz de transmitir continuamente a localização do animal para o servidor. Os dados são exibidos em um mapa interativo na aplicação web, permitindo que o tutor acompanhe, em tempo real, onde seu pet está.
 
@@ -12,7 +12,7 @@ A interface do site também oferece funcionalidades complementares para o cuidad
 
 - 🧼 Guia de Higiene: com checklists e alertas de banho, tosa e limpeza dos utensílios.
 
-- ❤️ Controle de Cuidados Gerais: como administração de medicamentos, visitas ao veterinário e acompanhamento de peso.</p>
+- ❤️ Controle de Cuidados Gerais: como administração de medicamentos, visitas ao veterinário e acompanhamento de peso.</div>
 
 <h2 align="center">Tecnologias utilizadas!</h2>
 <div align="center">
