@@ -10,9 +10,9 @@ export function Footer() {
         
         {/* Logo / Nome do site */}
         <div>
-          <h2 className="text-xl font-bold text-indigo-600 mb-2">MeuSite</h2>
+          <h2 className="text-xl font-bold text-indigo-600 mb-2">PetGuard</h2>
           <p className="text-sm">
-            © {new Date().getFullYear()} MeuSite. Todos os direitos reservados.
+            © {new Date().getFullYear()} PetGuard. Todos os direitos reservados.
           </p>
         </div>
 

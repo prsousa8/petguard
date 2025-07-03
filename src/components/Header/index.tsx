@@ -11,7 +11,7 @@ export function Header() {
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
         <Link href="/" className="text-2xl font-bold">
-          MeuSite
+          PetGuard
         </Link>
 
         <Menu/>
