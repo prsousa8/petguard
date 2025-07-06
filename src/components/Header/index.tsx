@@ -10,7 +10,7 @@ export function Header() {
     <header className="relative h-50 text-white shadow-md">
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
-        <Link href="/" className="text-2xl font-bold">
+        <Link href="/" className="text-2xl font-bold text-indigo-600">
           PetGuard
         </Link>
 

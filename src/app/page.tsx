@@ -25,7 +25,7 @@ const ProgressBar = ({ label, percentage, alertThreshold, className = '' }: Prog
     if (label.includes('Reservatório')) {
       message = 'ALERTA: Pouca ração! Reabasteça!';
     } else {
-      message = 'Bacia vazia. Dispensando ração.';
+      message = 'Tigela vazia. Dispensando ração.';
     }
   } else if (percentage < 50) {
     barColor = '#ff9800';
@@ -143,7 +143,7 @@ export default function Home() {
     const [mode, setMode] = useState<boolean | null>(null); // true para automático, false para manual
     const [servoState, setServoState] = useState<boolean | null>(null); // true para aberto, false para fechado
 
-    const ESP32_IP = 'http://192.168.1.116/'; 
+    const ESP32_IP = 'http://192.168.31.204/'; 
 
     const fetchData = async () => {
         try {
@@ -238,7 +238,7 @@ export default function Home() {
                     {!loading && sensorData && (
                         <div className="sensor-data-cards">
                             <ProgressBar 
-                                label="Nível da Ração na Bacia" 
+                                label="Nível da Ração na Tigela" 
                                 percentage={sensorData.nivel_bacia} 
                                 alertThreshold={BOWL_ALERT_THRESHOLD}
                             />
@@ -310,6 +310,7 @@ export default function Home() {
                     padding: 0;
                     font-family: 'Arial', sans-serif;
                     color: #333;
+                     background-color: #ffffff;
                 }
                 .container {
                     max-width: 900px;
