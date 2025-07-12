@@ -2,14 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 
 export function Menu() {
   const pathname = usePathname();
 
   const links = [
     { href: '/', label: 'Início' },
-    { href: '/sobre', label: 'Sobre' },
-    { href: '/contato', label: 'Contato' },
+    { href: '/mapa', label: 'Mapa' },
+    { href: '/dispenser', label: 'Dispenser' },
+    { href: '/diario', label: 'Diário do Pet' },
   ];
 
   return (

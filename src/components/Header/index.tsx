@@ -9,7 +9,7 @@ export function Header() {
   return (
     <header className="relative h-50 text-white shadow-md">
 
-      <div className="relative z-10 max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
+      <div className="relative z-10 max-w-6xl mx-auto px-0.05 h-full flex items-center justify-between gap-x-20">
         <Link href="/" className="text-2xl font-bold text-indigo-600">
           PetGuard
         </Link>
@@ -17,12 +17,28 @@ export function Header() {
         <Menu/>
 
 
-        <Link
-          href="/login"
-          className="bg-white text-indigo-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition"
-        >
-          Entrar
-        </Link>
+        <div className="flex items-center gap-4">
+      {/* Imagem com hover que muda o fundo */}
+      <div className="p-2 hover:bg-gray-200 rounded-full transition inline-flex items-center justify-center">
+        <Image
+          src="/assets/img/notify.svg"
+          alt="Imagem com hover"
+          width={50}
+          height={50}
+        />
+      </div>
+
+      {/* Imagem com link */}
+      <Link href="/pagina-destino">
+        <Image
+          src="/assets/img/login.svg"
+          alt="Imagem clicável"
+          width={50}
+          height={50}
+          className="cursor-pointer"
+        />
+      </Link>
+    </div>
       </div>
 
       {/* Imagem de fundo com Next/Image */}
