@@ -90,48 +90,6 @@ const ProgressBar = ({ label, percentage, alertThreshold, className = '' }: Prog
 };
 
 
-// 1. Crie um componente MapWrapper separado em um arquivo 'components/MapWrapper.tsx'
-interface MapWrapperProps {
-  className?: string;
-}
-
-const MapWrapper = ({ className }: MapWrapperProps) => {
-  // Localização genérica para o mapa (Camocim, Ceará, Brasil)
-  const petLocation: [number, number] = [-2.9056, -40.8384]; // Tipagem explícita como tupla de números
-
-  useEffect(() => {
-    const setupLeaflet = async () => {
-      const L = await import('leaflet');
-
-      L.Icon.Default.mergeOptions({
-        iconUrl: (await import('leaflet/dist/images/marker-icon.png')).default.src,
-        iconRetinaUrl: (await import('leaflet/dist/images/marker-icon-2x.png')).default.src,
-        shadowUrl: (await import('leaflet/dist/images/marker-shadow.png')).default.src,
-      });
-    };
-    setupLeaflet();
-  }, []);
-
-  const { MapContainer, TileLayer, Marker, Popup } = require('react-leaflet');
-
-
-  return (
-    <MapContainer center={petLocation} zoom={13} scrollWheelZoom={false} className={className}>
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <Marker position={petLocation}>
-        <Popup>
-          Seu pet está aqui! <br /> (Localização genérica)
-        </Popup>
-      </Marker>
-    </MapContainer>
-  );
-};
-
-const DynamicMap = dynamic(() => Promise.resolve(MapWrapper), { ssr: false });
-
 export default function Dispenser() {
     const [sensorData, setSensorData] = useState<{ 
         nivel_bacia: number; 
@@ -277,30 +235,6 @@ export default function Dispenser() {
                             )}
                         </div>
                     )}
-                </section>
-
-
-                <section className="map-section">
-                    <h2>Localização do Pet</h2>
-                    <DynamicMap className="leaflet-container" />
-                </section>
-
-                <section className="other-features">
-                    <h2>Outras Funcionalidades</h2>
-                    <div className="feature-grid">
-                        <div className="feature-card">
-                            <h3>📅 Tabela de Vacinação</h3>
-                            <p>Com lembretes de datas e registros de vacinas aplicadas.</p>
-                        </div>
-                        <div className="feature-card">
-                            <h3>🧼 Guia de Higiene</h3>
-                            <p>Com checklists e alertas de banho, tosa e limpeza dos utensílios.</p>
-                        </div>
-                        <div className="feature-card">
-                            <h3>❤️ Controle de Cuidados Gerais</h3>
-                            <p>Administração de medicamentos, visitas ao veterinário e acompanhamento de peso.</p>
-                        </div>
-                    </div>
                 </section>
             </main>
 

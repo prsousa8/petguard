@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id       Int     @id @default(autoincrement())
+  nome     String
+  email    String  @unique
+  senha    String
+  criadoEm DateTime @default(now())
+
+  perfil   Perfil?
+  pets     Pet[]        // Relação 1:N com Pet
+}
+
+model Perfil {
+  id        Int     @id @default(autoincrement())
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+  usuarioId Int     @unique
+
+  nome      String
+  email     String
+  telefone  String
+  descricao String
+  foto      String
+}
+
+model Pet {
+  id         Int         @id @default(autoincrement())
+  nome       String
+  raca       String
+  idade      String
+  descricao  String
+  usuarioId  Int
+  usuario    Usuario     @relation(fields: [usuarioId], references: [id])
+  vacinacoes Vacinacao[] // Relacionamento com histórico de vacinação
+}
+
+model Vacinacao {
+  id        Int      @id @default(autoincrement())
+  petId     Int
+  pet        Pet      @relation(fields: [petId], references: [id], onDelete: Cascade)
+  vacina    String
+  data      DateTime
+  observacao String?
+}
+
+
+

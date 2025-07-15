@@ -57,12 +57,22 @@ export function HallDaFama() {
       >
         {pets.map((pet, index) => (
           <SwiperSlide key={index}>
-            <div className="bg-gray-100 w-64 p-4 rounded-xl shadow-md flex flex-col items-center text-center">
-              <div className="w-32 h-32 relative rounded-full overflow-hidden mb-3">
-                <Image src={pet.imagem} alt={pet.nome} fill className="object-cover" />
+            <div className="w-56 rounded-xl shadow-lg overflow-hidden bg-gray-100">
+              {/* Parte superior azul */}
+              <div className="bg-blue-200 h-24 w-full" />
+
+              {/* Imagem sobreposta */}
+              <div className="flex justify-center -mt-12">
+                <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md relative">
+                  <Image src={pet.imagem} alt={pet.nome} fill className="object-cover" />
+                </div>
               </div>
-              <h3 className="text-lg font-semibold text-[#009FFF]">{pet.nome}</h3>
-              <p className="text-sm text-gray-600 mt-1">{pet.descricao}</p>
+
+              {/* Parte inferior com texto */}
+              <div className="bg-gray-100 p-5 pt-6 text-center">
+                <h3 className="text-lg font-semibold text-indigo-700">{pet.nome}</h3>
+                <p className="text-sm text-gray-600 mt-1">{pet.descricao}</p>
+              </div>
             </div>
           </SwiperSlide>
         ))}

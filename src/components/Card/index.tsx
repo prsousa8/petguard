@@ -9,7 +9,17 @@ type CardProps = {
 
 export function Card({ icon, title, description }: CardProps) {
   return (
-    <div className="bg-gray-100 rounded-xl p-6 shadow-md flex flex-col items-center text-center gap-4 w-70">
+    <div
+      className="
+    bg-gray-50
+    rounded-xl
+    p-6
+    shadow-md
+    flex flex-col items-center text-center gap-4 w-70
+    transition transform duration-300 ease-in-out
+    hover:shadow-xl hover:scale-[1.03] cursor-pointer
+  "
+    >
       {/* Ícone */}
       <Image
         src={icon}
@@ -24,5 +34,6 @@ export function Card({ icon, title, description }: CardProps) {
         <p className="text-sm text-gray-600">{description}</p>
       </div>
     </div>
+
   );
 }

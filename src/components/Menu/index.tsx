@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import Image from 'next/image';
 
 export function Menu() {
   const pathname = usePathname();
@@ -12,6 +11,7 @@ export function Menu() {
     { href: '/mapa', label: 'Mapa' },
     { href: '/dispenser', label: 'Dispenser' },
     { href: '/diario', label: 'Diário do Pet' },
+    { href: '/dashboard', label: 'Dashboard' },
   ];
 
   return (
