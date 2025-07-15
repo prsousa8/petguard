@@ -72,6 +72,20 @@ E instale todas as dependências de uma única vez com:
 npm install
 ~~~
 
+### Migrations do Prisma
+
+Utilize o comando abaixo via terminal para gerar as migrations:
+~~~
+npx prisma migrate dev
+~~~
+
+### Migrations do Prisma
+
+Utilize o comando abaixo via terminal para gerar o cliente Prisma:
+~~~
+npx prisma generate
+~~~
+
 ### Execução
 
 Utilize o comando abaixo via terminal para executar o código:
