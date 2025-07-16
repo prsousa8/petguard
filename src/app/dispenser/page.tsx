@@ -4,115 +4,45 @@ import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css'; // Mantenha este import para os estilos CSS globais
 
-// Componente de Barra de Progresso Reutilizável (sem alterações, assumindo que as correções anteriores foram aplicadas)
-interface ProgressBarProps {
-  label: string;
-  percentage: number;
-  alertThreshold: number;
-  className?: string;
-}
-
-const ProgressBar = ({ label, percentage, alertThreshold, className = '' }: ProgressBarProps) => {
-  let barColor = '#4CAF50';
-  let textColor = '#212121';
-  let message = '';
-  let showMessage = false;
-
-  if (percentage <= alertThreshold) {
-    barColor = '#f44336';
-    textColor = '#f44336';
-    showMessage = true;
-    if (label.includes('Reservatório')) {
-      message = 'ALERTA: Pouca ração! Reabasteça!';
-    } else {
-      message = 'Tigela vazia. Dispensando ração.';
-    }
-  } else if (percentage < 50) {
-    barColor = '#ff9800';
-  }
-
-  const fillerWidth = Math.max(0, Math.min(100, percentage));
-
-  return (
-    <div className={`progress-container ${className}`}>
-      <div className="progress-header">
-        <h3 style={{ color: textColor }}>{label}</h3>
-        <span style={{ color: textColor }}>{percentage}%</span>
-      </div>
-      <div className="progress-bar">
-        <div className="progress-filler" style={{ width: `${fillerWidth}%`, backgroundColor: barColor }}></div>
-      </div>
-      {showMessage && <p className="alert-message">{message}</p>}
-
-      <style jsx>{`
-        .progress-container {
-          background-color: #f0f0f0;
-          border-radius: 8px;
-          padding: 15px;
-          margin-bottom: 20px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .progress-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 10px;
-        }
-        .progress-header h3 {
-          margin: 0;
-          font-size: 1.2rem;
-        }
-        .progress-header span {
-          font-weight: bold;
-          font-size: 1.2rem;
-        }
-        .progress-bar {
-          width: 100%;
-          background-color: #e0e0e0;
-          border-radius: 5px;
-          height: 25px;
-          overflow: hidden;
-        }
-        .progress-filler {
-          height: 100%;
-          border-radius: 5px;
-          transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
-        }
-        .alert-message {
-          color: #f44336;
-          font-weight: bold;
-          margin-top: 10px;
-          text-align: center;
-        }
-      `}</style>
-    </div>
-  );
-};
-
-
 export default function Dispenser() {
-    const [sensorData, setSensorData] = useState<{ 
-        nivel_bacia: number; 
+    const [foodSensorData, setFoodSensorData] = useState<{
+        nivel_bacia: number;
         nivel_reservatorio: number;
-        modo_automatico?: boolean; // Adiciona modo_automatico ao tipo de dados do sensor
-        servo_aberto?: boolean;    // Adiciona servo_aberto ao tipo de dados do sensor
+        modo_automatico?: boolean;
+        servo_aberto?: boolean;
     } | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [mode, setMode] = useState<boolean | null>(null); // true para automático, false para manual
-    const [servoState, setServoState] = useState<boolean | null>(null); // true para aberto, false para fechado
 
-    const ESP32_IP = 'http://192.168.31.204/'; 
+    interface BebedouroData {
+        nivel_agua: number;
+        bomba_status: string;
+        horario_agendado_ligar: string;
+        horario_agendado_desligar: string;
+        hora_atual_rtc: string;
+    }
+    const [bebedouroData, setBebedouroData] = useState<BebedouroData | null>(null);
 
-    const fetchData = async () => {
+    const [loadingFood, setLoadingFood] = useState(true);
+    const [loadingBebedouro, setLoadingBebedouro] = useState(true);
+
+    const [mode, setMode] = useState<boolean | null>(null);
+    const [servoState, setServoState] = useState<boolean | null>(null);
+
+    const [scheduleOnTime, setScheduleOnTime] = useState<string>('08:00');
+    const [scheduleOffTime, setScheduleOffTime] = useState<string>('11:00');
+
+
+    const FOOD_DISPENSER_IP = 'http://192.168.52.204/';
+    const BEBEDOURO_IP = 'http://192.168.52.59/';
+
+    const fetchFoodData = async () => {
         try {
-            const res = await fetch(ESP32_IP);
+            const res = await fetch(FOOD_DISPENSER_IP);
             if (!res.ok) {
                 throw new Error(`HTTP error! status: ${res.status}`);
             }
             const data = await res.json();
-            setSensorData(data);
-            setLoading(false);
-            // Atualiza o estado do modo e servo com base nos dados recebidos
+            setFoodSensorData(data);
+            setLoadingFood(false);
             if (typeof data.modo_automatico === 'boolean') {
                 setMode(data.modo_automatico);
             }
@@ -120,20 +50,37 @@ export default function Dispenser() {
                 setServoState(data.servo_aberto);
             }
         } catch (err) {
-            console.error('Erro ao buscar dados:', err);
-            setSensorData(null);
-            setLoading(false);
+            console.error('Erro ao buscar dados do dispensador de ração:', err);
+            setFoodSensorData(null);
+            setLoadingFood(false);
         }
     };
 
-    // Função para enviar comandos ao ESP32
-    const sendCommand = async (endpoint: string, payload: object) => {
+    const fetchBebedouroData = async () => {
         try {
-            const res = await fetch(`${ESP32_IP}${endpoint}`, {
+            const res = await fetch(BEBEDOURO_IP);
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            const data: BebedouroData = await res.json();
+            setBebedouroData(data);
+            setLoadingBebedouro(false);
+            if (data.horario_agendado_ligar) setScheduleOnTime(data.horario_agendado_ligar);
+            if (data.horario_agendado_desligar) setScheduleOffTime(data.horario_agendado_desligar);
+        } catch (err) {
+            console.error('Erro ao buscar dados do bebedouro:', err);
+            setBebedouroData(null);
+            setLoadingBebedouro(false);
+        }
+    };
+
+    const sendCommand = async (ip: string, endpoint: string, payload: object) => {
+        try {
+            const res = await fetch(`${ip}${endpoint}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*' // Necessário para CORS no navegador
+                    'Access-Control-Allow-Origin': '*'
                 },
                 body: JSON.stringify(payload),
             });
@@ -143,7 +90,11 @@ export default function Dispenser() {
             }
             const data = await res.json();
             console.log(`Comando '${endpoint}' enviado com sucesso:`, data);
-            fetchData(); 
+            if (ip === FOOD_DISPENSER_IP) {
+                fetchFoodData();
+            } else if (ip === BEBEDOURO_IP) {
+                fetchBebedouroData();
+            }
         } catch (err) {
             console.error('Erro ao enviar comando:', err);
             if (err instanceof Error) {
@@ -154,88 +105,72 @@ export default function Dispenser() {
         }
     };
 
-    const toggleMode = () => {
-        const newMode = !mode; // Inverte o modo atual
-        const modeString = newMode ? "automatico" : "manual";
-        sendCommand('mode', { modo: modeString });
-    };
-
-    const toggleServo = () => {
-        // Só permite controlar o servo se estiver no modo manual
-        if (mode) { // Se mode for true (automático)
-            alert("Não é possível controlar o servo manualmente no modo automático.");
-            return;
-        }
-        const newServoState = !servoState; // Inverte o estado do servo
-        const acaoString = newServoState ? "abrir" : "fechar";
-        sendCommand('servo', { acao: acaoString });
-    };
-
-
     useEffect(() => {
-        fetchData(); // Chama uma vez imediatamente
-        const intervalId = setInterval(fetchData, 500); // Intervalo de atualização
+        fetchFoodData();
+        fetchBebedouroData();
+        const foodIntervalId = setInterval(fetchFoodData, 5000);
+        const bebedouroIntervalId = setInterval(fetchBebedouroData, 5000);
 
-        return () => clearInterval(intervalId);
+        return () => {
+            clearInterval(foodIntervalId);
+            clearInterval(bebedouroIntervalId);
+        };
     }, []);
 
     const RESERVOIR_ALERT_THRESHOLD = 20;
     const BOWL_ALERT_THRESHOLD = 10;
+    const WATER_ALERT_THRESHOLD = 15;
 
     return (
         <div className="container">
             <header className="header">
-                <h1>PetGuard - Monitoramento de Ração</h1>
+                <h1>PetGuard - Monitoramento Completo</h1>
             </header>
 
             <main className="main-content">
                 <section className="feed-status">
-                    <h2>Status da Ração</h2>
-                    {loading && <p className="loading-message">Carregando dados dos sensores...</p>}
-
-                    {!loading && sensorData && (
-                        <div className="sensor-data-cards">
-                            <ProgressBar 
-                                label="Nível da Ração na Tigela" 
-                                percentage={sensorData.nivel_bacia} 
-                                alertThreshold={BOWL_ALERT_THRESHOLD}
-                            />
-                            <ProgressBar 
-                                label="Nível da Ração no Reservatório" 
-                                percentage={sensorData.nivel_reservatorio} 
-                                alertThreshold={RESERVOIR_ALERT_THRESHOLD}
-                            />
-                        </div>
-                    )}
-
-                    {!loading && !sensorData && (
-                        <p className="error-message">Não foi possível obter os dados dos sensores. Verifique a conexão do ESP32.</p>
+                    <h2>Status e Controle da Ração</h2>
+                    <div className="iframe-wrapper-dis">
+                        <iframe
+                            src={FOOD_DISPENSER_IP}
+                            title="Página do Bebedouro"
+                            width="100%"
+                            height="680px" // Altura MUITO AUMENTADA para tentar exibir tudo
+                            style={{ border: 'none' }}
+                            // scrolling="no" foi removido para permitir que as barras de rolagem apareçam se a altura for insuficiente.
+                            // Se você *ainda* quer ocultar as barras de rolagem mesmo que o conteúdo seja cortado, adicione overflow: hidden no CSS do iframe-wrapper
+                        >
+                            Seu navegador não suporta iframes.
+                        </iframe>
+                    </div>
+                    {!loadingBebedouro && bebedouroData && bebedouroData.nivel_agua <= WATER_ALERT_THRESHOLD && (
+                        <p className="alert-message iframe-alert">ALERTA: Encher o reservatório do bebedouro!</p>
                     )}
                 </section>
 
-                <section className="control-section">
-                    <h2>Controles</h2>
-                    {loading ? (
-                        <p>Carregando controles...</p>
-                    ) : (
-                        <div className="control-buttons">
-                            <div className="mode-control">
-                                <h3>Modo de Operação: {mode === true ? 'Automático' : (mode === false ? 'Manual' : 'Desconhecido')}</h3>
-                                
-                            </div>
+                <hr />
 
-                            {!mode && ( // Mostra o controle do servo apenas se estiver no modo manual
-                                <div className="servo-control">
-                                    <h3>Controle do Servo: {servoState ? 'Aberto' : 'Fechado'}</h3>
-                                    
-                                </div>
-                            )}
-                            {mode && ( // Mensagem no modo automático
-                                <p className="servo-message">O controle manual do servo está desativado no modo automático.</p>
-                            )}
-                        </div>
+                {/* Seção para exibir a página do bebedouro via iframe com estilos aprimorados */}
+                <section className="bebedouro-webpage">
+                    <h2>Bebedouro</h2>
+                    <div className="iframe-wrapper">
+                        <iframe
+                            src={BEBEDOURO_IP}
+                            title="Página do Bebedouro"
+                            width="100%"
+                            height="860px" // Altura MUITO AUMENTADA para tentar exibir tudo
+                            style={{ border: 'none' }}
+                            // scrolling="no" foi removido para permitir que as barras de rolagem apareçam se a altura for insuficiente.
+                            // Se você *ainda* quer ocultar as barras de rolagem mesmo que o conteúdo seja cortado, adicione overflow: hidden no CSS do iframe-wrapper
+                        >
+                            Seu navegador não suporta iframes.
+                        </iframe>
+                    </div>
+                    {!loadingBebedouro && bebedouroData && bebedouroData.nivel_agua <= WATER_ALERT_THRESHOLD && (
+                        <p className="alert-message iframe-alert">ALERTA: Encher o reservatório do bebedouro!</p>
                     )}
                 </section>
+
             </main>
 
             <style jsx global>{`
@@ -244,7 +179,7 @@ export default function Dispenser() {
                     padding: 0;
                     font-family: 'Arial', sans-serif;
                     color: #333;
-                     background-color: #ffffff;
+                    background-color: #f5f5f5;
                 }
                 .container {
                     max-width: 900px;
@@ -279,117 +214,184 @@ export default function Dispenser() {
                     color: #d32f2f;
                     font-weight: bold;
                 }
-                .feed-status {
+                .feed-status, .water-status, .control-section, .bebedouro-webpage {
                     margin-bottom: 30px;
+                    background-color: #fff;
+                    border-radius: 8px;
+                    padding: 20px;
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
                 }
-                .feed-status h2, .map-section h2, .other-features h2, .control-section h2 {
+                .feed-status h2, .water-status h2, .control-section h2, .bebedouro-webpage h2 {
                     color: #007bff;
                     border-bottom: 2px solid #e0e0e0;
                     padding-bottom: 10px;
                     margin-top: 0;
                     margin-bottom: 20px;
+                    font-size: 1.8rem;
+                }
+                .section-description {
+                    text-align: center;
+                    color: #666;
+                    font-style: italic;
+                    margin-bottom: 25px;
                 }
                 .sensor-data-cards {
                     display: flex;
                     flex-direction: column;
                     gap: 25px;
                 }
-                .map-section {
-                    margin-bottom: 30px;
-                }
-                .leaflet-container {
-                    height: 400px;
-                    width: 100%;
-                    border-radius: 8px;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                }
-
-                .control-section {
-                    margin-bottom: 30px;
-                    background-color: #f0f0f0;
-                    border-radius: 8px;
-                    padding: 15px;
-                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                hr {
+                    border: none;
+                    border-top: 1px solid #eee;
+                    margin: 40px 0;
                 }
                 .control-buttons {
                     display: flex;
                     flex-direction: column;
-                    gap: 15px;
+                    gap: 20px;
                 }
                 .mode-control, .servo-control {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    gap: 10px;
-                    padding: 10px;
+                    gap: 15px;
+                    padding: 20px;
                     border: 1px solid #ddd;
-                    border-radius: 5px;
-                    background-color: #fff;
+                    border-radius: 8px;
+                    background-color: #f9f9f9;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
                 }
                 .mode-control h3, .servo-control h3 {
                     margin: 0;
-                    font-size: 1.1rem;
+                    font-size: 1.3rem;
                     color: #444;
                 }
                 .mode-toggle-button, .servo-toggle-button {
-                    padding: 10px 20px;
-                    font-size: 1rem;
+                    padding: 12px 25px;
+                    font-size: 1.1rem;
                     border: none;
-                    border-radius: 5px;
+                    border-radius: 6px;
                     cursor: pointer;
-                    transition: background-color 0.3s ease;
+                    transition: background-color 0.3s ease, transform 0.2s ease;
                     color: white;
                     width: 100%;
-                    max-width: 250px;
+                    max-width: 300px;
                 }
                 .mode-auto {
-                    background-color: #28a745; /* Verde para automático */
+                    background-color: #28a745;
+                }
+                .mode-auto:hover {
+                    background-color: #218838;
+                    transform: translateY(-2px);
                 }
                 .mode-manual {
-                    background-color: #007bff; /* Azul para manual */
+                    background-color: #007bff;
+                }
+                .mode-manual:hover {
+                    background-color: #0056b3;
+                    transform: translateY(-2px);
                 }
                 .servo-open {
-                    background-color: #dc3545; /* Vermelho para aberto */
+                    background-color: #dc3545;
+                }
+                .servo-open:hover {
+                    background-color: #c82333;
+                    transform: translateY(-2px);
                 }
                 .servo-closed {
-                    background-color: #28a745; /* Verde para fechado */
+                    background-color: #28a745;
                 }
-                .mode-toggle-button:hover, .servo-toggle-button:hover {
-                    opacity: 0.9;
+                .servo-closed:hover {
+                    background-color: #218838;
+                    transform: translateY(-2px);
                 }
                 .servo-message {
                     text-align: center;
                     color: #666;
                     font-style: italic;
                     margin-top: 10px;
-                }
-
-
-                .other-features {
-                    margin-top: 30px;
-                }
-                .feature-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                    gap: 20px;
-                }
-                .feature-card {
-                    background-color: #f9f9f9;
-                    border: 1px solid #e0e0e0;
-                    border-radius: 8px;
-                    padding: 20px;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-                }
-                .feature-card h3 {
-                    color: #0056b3;
-                    margin-top: 0;
-                    font-size: 1.3rem;
-                    margin-bottom: 10px;
-                }
-                .feature-card p {
                     font-size: 0.95rem;
-                    line-height: 1.5;
-                    color: #666;
+                }
+
+                .pump-scheduling-card {
+                    background-color: #f0f0f0;
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin-top: 25px;
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                    text-align: center;
+                }
+                .pump-scheduling-card h3 {
+                    color: #007bff;
+                    margin-top: 0;
+                    margin-bottom: 15px;
+                }
+                .pump-scheduling-card p {
+                    margin: 5px 0;
+                    font-size: 1rem;
+                }
+                .schedule-inputs {
+                    display: flex;
+                    justify-content: center;
+                    gap: 20px;
+                    margin: 20px 0;
+                }
+                .schedule-inputs label {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-start;
+                    font-weight: bold;
+                    color: #555;
+                }
+                .schedule-inputs input[type="time"] {
+                    padding: 8px;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                    font-size: 1rem;
+                    margin-top: 5px;
+                    width: 120px;
+                }
+                .update-schedule-button {
+                    background-color: #007bff;
+                    color: white;
+                    padding: 12px 25px;
+                    font-size: 1.1rem;
+                    border: none;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: background-color 0.3s ease, transform 0.2s ease;
+                    margin-top: 15px;
+                }
+                .update-schedule-button:hover {
+                    background-color: #0056b3;
+                    transform: translateY(-2px);
+                }
+                .iframe-alert {
+                    margin-top: 20px;
+                }
+
+                /* Melhorias para o iframe */
+                .iframe-wrapper {
+                    display: flex;
+                    justify-content: center;
+                    width: 100%;
+                    max-width: 500px;
+                    margin: 0 auto;
+                    background-color: #fff;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    overflow: hidden; /* Mantido overflow: hidden para manter os cantos arredondados, mas o iframe interno agora é grande o suficiente */
+                }
+                .iframe-wrapper iframe {
+                    display: block;
+                    width: 100%;
+                    height: 860px; /* Altura MUITO AUMENTADA */
+                }
+
+                .iframe-wrapper-dis iframe {
+                    display: block;
+                    width: 100%;
+                    height: 680px; 
                 }
             `}</style>
         </div>
