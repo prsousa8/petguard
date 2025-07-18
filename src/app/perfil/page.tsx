@@ -22,7 +22,7 @@ export default function Perfil() {
       <section className="max-w-3xl mx-auto px-4 py-8">
         <SubmenuTabs
           tabs={[
-            { label: 'Dono', value: 'dono' },
+            { label: 'Tutor', value: 'dono' },
             { label: 'Pet', value: 'pet' },
           ]}
           defaultValue="dono"
