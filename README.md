@@ -72,6 +72,16 @@ E instale todas as dependências de uma única vez com:
 npm install
 ~~~
 
+### Arquivo .env
+
+Adicione um arquivo chamado .env na raiz do projeto e ponha o caminho do MySQL, com seu usuário e senha para criar o banco de dados petguard.
+
+<img src="../petguard/public/env.png" alt="raiz-env">
+
+~~~
+DATABASE_URL="mysql://USER:PASSWORD@localhost:3306/petguard"
+~~~
+
 ### Migrations do Prisma
 
 Utilize o comando abaixo via terminal para gerar as migrations:
