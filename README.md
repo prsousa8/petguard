@@ -76,7 +76,7 @@ npm install
 
 Adicione um arquivo chamado .env na raiz do projeto e ponha o caminho do MySQL, com seu usuário e senha para criar o banco de dados petguard.
 
-<img src="../petguard/public/env.png" alt="raiz-env">
+<img src="public/env.png" alt="raiz-env">
 
 ~~~
 DATABASE_URL="mysql://USER:PASSWORD@localhost:3306/petguard"
