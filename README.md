@@ -89,7 +89,7 @@ Utilize o comando abaixo via terminal para gerar as migrations:
 npx prisma migrate dev
 ~~~
 
-### Migrations do Prisma
+### Cliente Prisma
 
 Utilize o comando abaixo via terminal para gerar o cliente Prisma:
 ~~~
